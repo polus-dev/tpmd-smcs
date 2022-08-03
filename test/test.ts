@@ -78,8 +78,8 @@ describe('team-distributor', () => {
         expect(await token0.balanceOf(projectOwner.address)).to.be.equals(supply)
         expect(await token1.balanceOf(projectOwner.address)).to.be.equals(supply)
 
-        expect(await exchange.token0()).equals(zeroAddress)
-        expect(await exchange.token1()).equals(zeroAddress)
+        expect(await exchange.token0()).to.be.equals(zeroAddress)
+        expect(await exchange.token1()).to.be.equals(zeroAddress)
 
         expect(await exchange.owner()).to.be.equal(projectOwner.address)
     })
@@ -129,8 +129,8 @@ describe('team-distributor', () => {
         await expect(exchange.connect(deployer).setToken1(token1.address))
             .to.be.revertedWith(ERRORS.NOT_COWNER)
 
-        expect(await exchange.token0()).equals(zeroAddress)
-        expect(await exchange.token1()).equals(zeroAddress)
+        expect(await exchange.token0()).to.be.equals(zeroAddress)
+        expect(await exchange.token1()).to.be.equals(zeroAddress)
     })
 
     it('try exchange before initialization', async () => {
@@ -186,11 +186,11 @@ describe('team-distributor', () => {
         await token0.connect(accountHolder).approve(exchange.address, base)
 
         // before exchange
-        expect(await token1.balanceOf(accountHolder.address)).equals(0n)
-        expect(await token0.balanceOf(accountHolder.address)).equals(base)
+        expect(await token1.balanceOf(accountHolder.address)).to.be.equals(0n)
+        expect(await token0.balanceOf(accountHolder.address)).to.be.equals(base)
 
-        expect(await token0.balanceOf(exchange.address)).equals(0n)
-        expect(await token1.balanceOf(exchange.address)).equals(base)
+        expect(await token0.balanceOf(exchange.address)).to.be.equals(0n)
+        expect(await token1.balanceOf(exchange.address)).to.be.equals(base)
         // ---------------
 
         const blockts = await determineBlockTimestamp()
@@ -199,11 +199,11 @@ describe('team-distributor', () => {
             .withArgs(accountHolder.address, base, blockts)
 
         // after exchange
-        expect(await token1.balanceOf(accountHolder.address)).equals(base)
-        expect(await token0.balanceOf(accountHolder.address)).equals(0n)
+        expect(await token1.balanceOf(accountHolder.address)).to.be.equals(base)
+        expect(await token0.balanceOf(accountHolder.address)).to.be.equals(0n)
 
-        expect(await token0.balanceOf(exchange.address)).equals(base)
-        expect(await token1.balanceOf(exchange.address)).equals(0n)
+        expect(await token0.balanceOf(exchange.address)).to.be.equals(base)
+        expect(await token1.balanceOf(exchange.address)).to.be.equals(0n)
         // ---------------
     })
 })
