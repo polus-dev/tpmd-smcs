@@ -32,7 +32,8 @@ library Errors {
     string constant INV_AMOUNT = "require: amount > 0";
     string constant INV_ALLOWN = "require: allowance >= amount";
 
-    string constant SORRY_BALC = "insufficient balance token1";
+    string constant INV_BALAN0 = "insufficient balance token0";
+    string constant INV_BALAN1 = "insufficient balance token1";
 }
 
 // Exchange 1:1 (_token0 -> _token1)
@@ -70,11 +71,12 @@ contract Exchange is Ownable {
     function exchange(uint256 _amount) external {
         require(token0Inited && token1Inited, Errors.NOT_INITED);
         require(_amount > 0, Errors.INV_AMOUNT);
-        require(token1.balanceOf(address(this)) >= _amount, Errors.SORRY_BALC);
-        require(
-            token0.allowance(msg.sender, address(this)) >= _amount,
-            Errors.INV_ALLOWN
-        );
+
+        require(token0.balanceOf(msg.sender) >= _amount, Errors.INV_BALAN0);
+        require(token1.balanceOf(address(this)) >= _amount, Errors.INV_BALAN1);
+
+        uint256 allowance = token0.allowance(msg.sender, address(this));
+        require(allowance >= _amount, Errors.INV_ALLOWN);
 
         token0.transferFrom(msg.sender, address(this), _amount);
         token1.transfer(msg.sender, _amount);

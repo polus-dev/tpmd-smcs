@@ -9,11 +9,15 @@ import { Exchange } from '../typechain-types/contracts/Exchange'
 const ERRORS = {
     // from 'contracts/Exchange.sol' (Errors)
     NOT_INITED: 'not initialized',
+
     TOKEN0_SET: 'token0 is already set',
     TOKEN1_SET: 'token1 is already set',
+
     INV_AMOUNT: 'require: amount > 0',
     INV_ALLOWN: 'require: allowance >= amount',
-    SORRY_BALC: 'insufficient balance token1',
+
+    INV_BALAN0: 'insufficient balance token0',
+    INV_BALAN1: 'insufficient balance token1',
 
     // from 'contracts/utils/Ownable.sol'
     NOT_COWNER: 'not owner'
@@ -157,6 +161,8 @@ describe('team-distributor', () => {
 
     it('try to exchange with invalid allowance', async () => {
         await setTokens()
+
+        await token0.connect(projectOwner).transfer(accountHolder.address, ethToWei(10n))
         await token1.connect(projectOwner).transfer(exchange.address, ethToWei(100n))
 
         await expect(exchange.connect(accountHolder).exchange(ethToWei(10n)))
@@ -164,16 +170,27 @@ describe('team-distributor', () => {
     })
 
     it('try to exchange with insufficient balance of token1', async () => {
+        await setTokens()
         const base = ethToWei(100n)
 
-        await setTokens()
         await token1.connect(projectOwner).transfer(exchange.address, base)
-
         await token0.connect(projectOwner).transfer(accountHolder.address, base + 1n)
         await token0.connect(accountHolder).approve(exchange.address, base + 1n)
 
         await expect(exchange.connect(accountHolder).exchange(base + 1n))
-            .to.be.revertedWith(ERRORS.SORRY_BALC)
+            .to.be.revertedWith(ERRORS.INV_BALAN1)
+    })
+
+    it('try to exchange with insufficient balance of token0', async () => {
+        await setTokens()
+        const base = ethToWei(100n)
+
+        await token1.connect(projectOwner).transfer(exchange.address, base)
+        await token0.connect(projectOwner).transfer(accountHolder.address, base - 1n)
+        await token0.connect(accountHolder).approve(exchange.address, base)
+
+        await expect(exchange.connect(accountHolder).exchange(base))
+            .to.be.revertedWith(ERRORS.INV_BALAN0)
     })
 
     it('try to successful exchange token0 -> token1', async () => {
