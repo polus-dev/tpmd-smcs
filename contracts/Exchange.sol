@@ -44,7 +44,7 @@ contract Exchange is Ownable {
     IERC20 public token0;
     IERC20 public token1;
 
-    constructor(address owner) Ownable(owner) {}
+    constructor(address _owner) Ownable(_owner) {}
 
     event SetUpToken(address _token, uint8 _type);
     event Exchanged(address indexed _from, uint256 _amount, uint256 _timestamp);
