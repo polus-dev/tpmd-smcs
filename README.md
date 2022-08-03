@@ -1,6 +1,4 @@
-# tpmd-smcs
-
-## (team promise distributor smart contracts)
+# tpmd-smcs (team promise distributor smart contracts)
 
 > :warning: Work in progress! This is not production ready version yet.
 
