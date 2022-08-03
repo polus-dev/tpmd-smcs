@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Team promise distributor smart contracts",
   "author": "polus <https://github.com/polus-dev/>",
-  "license": "...",
+  "license": "AGPL-3.0",
   "devDependencies": {
     "@nomicfoundation/hardhat-chai-matchers": "^1.0.2",
     "@nomicfoundation/hardhat-network-helpers": "^1.0.3",

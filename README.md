@@ -6,4 +6,4 @@ Smart contracts for distribution the promise of the `Polus (PLS)` token by using
 
 # LICENSE
 
-<...> Read more in [LICENSE](./LICENSE) file.
+AGPL-3.0 license. Read more in [LICENSE](./LICENSE) file.
