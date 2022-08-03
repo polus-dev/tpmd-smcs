@@ -38,44 +38,47 @@ library Errors {
 // Exchange 1:1 (_token0 -> _token1)
 
 contract Exchange is Ownable {
-    bool private _token0Inited;
-    bool private _token1Inited;
+    bool private token0Inited;
+    bool private token1Inited;
 
-    IERC20 public _token0;
-    IERC20 public _token1;
+    IERC20 public token0;
+    IERC20 public token1;
 
     constructor(address owner) Ownable(owner) {}
 
-    event SetUpToken(address token, uint8 tokenType);
-    event Exchanged(address indexed by, uint256 amount, uint256 timestamp);
+    event SetUpToken(address _token, uint8 _type);
+    event Exchanged(address indexed _from, uint256 _amount, uint256 _timestamp);
 
-    function setToken0(address tokenAddress) external onlyOwner {
-        require(address(_token0) == address(0), Errors.TOKEN0_SET);
+    function setToken0(address _address) external onlyOwner {
+        require(address(token0) == address(0), Errors.TOKEN0_SET);
 
-        _token0 = IERC20(tokenAddress);
-        _token0Inited = true;
-        emit SetUpToken(tokenAddress, 0);
+        token0 = IERC20(_address);
+        token0Inited = true;
+
+        emit SetUpToken(_address, 0);
     }
 
-    function setToken1(address tokenAddress) external onlyOwner {
-        require(address(_token1) == address(0), Errors.TOKEN1_SET);
+    function setToken1(address _address) external onlyOwner {
+        require(address(token1) == address(0), Errors.TOKEN1_SET);
 
-        _token1 = IERC20(tokenAddress);
-        _token1Inited = true;
-        emit SetUpToken(tokenAddress, 1);
+        token1 = IERC20(_address);
+        token1Inited = true;
+
+        emit SetUpToken(_address, 1);
     }
 
-    function exchange(uint256 amount) external {
-        require(_token0Inited && _token1Inited, Errors.NOT_INITED);
-        require(amount > 0, Errors.INV_AMOUNT);
-        require(_token1.balanceOf(address(this)) >= amount, Errors.SORRY_BALC);
+    function exchange(uint256 _amount) external {
+        require(token0Inited && token1Inited, Errors.NOT_INITED);
+        require(_amount > 0, Errors.INV_AMOUNT);
+        require(token1.balanceOf(address(this)) >= _amount, Errors.SORRY_BALC);
+        require(
+            token0.allowance(msg.sender, address(this)) >= _amount,
+            Errors.INV_ALLOWN
+        );
 
-        uint256 allowance = _token0.allowance(msg.sender, address(this));
-        require(allowance >= amount, Errors.INV_ALLOWN);
+        token0.transferFrom(msg.sender, address(this), _amount);
+        token1.transfer(msg.sender, _amount);
 
-        _token0.transferFrom(msg.sender, address(this), amount);
-        _token1.transfer(msg.sender, amount);
-
-        emit Exchanged(msg.sender, amount, block.timestamp);
+        emit Exchanged(msg.sender, _amount, block.timestamp);
     }
 }

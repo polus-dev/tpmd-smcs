@@ -21,28 +21,28 @@
 pragma solidity ^0.8.0;
 
 contract Ownable {
-    address public _owner;
+    address public owner;
 
     event OwnershipTransferred(
-        address indexed previousOwner,
-        address indexed newOwner
+        address indexed _previousOwner,
+        address indexed _newOwner
     );
 
-    constructor(address owner) {
-        _transferOwnership(owner);
-    }
-
-    function transferOwnership(address newOwner) external onlyOwner {
-        _transferOwnership(newOwner);
+    constructor(address _owner) {
+        _transferOwnership(_owner);
     }
 
     modifier onlyOwner() {
-        require(_owner == msg.sender, "not owner");
+        require(owner == msg.sender, "not owner");
         _;
     }
 
-    function _transferOwnership(address newOwner) private {
-        emit OwnershipTransferred(_owner, newOwner);
-        _owner = newOwner;
+    function transferOwnership(address _newOwner) external onlyOwner {
+        _transferOwnership(_newOwner);
+    }
+
+    function _transferOwnership(address _newOwner) private {
+        emit OwnershipTransferred(owner, _newOwner);
+        owner = _newOwner;
     }
 }

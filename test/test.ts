@@ -1,5 +1,5 @@
 import { expect } from 'chai'
-import { ethers } from 'hardhat'
+import { ethers, network } from 'hardhat'
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers'
 import '@nomicfoundation/hardhat-chai-matchers'
 
@@ -33,9 +33,29 @@ describe('team-distributor', () => {
     let deployer: SignerWithAddress
     let projectOwner: SignerWithAddress
     let accountHolder: SignerWithAddress
+    let someNewOwner: SignerWithAddress
+
+    async function setTokens (): Promise<void> {
+        await exchange.connect(projectOwner).setToken0(token0.address)
+        await exchange.connect(projectOwner).setToken1(token1.address)
+    }
+
+    async function determineBlockTimestamp (shiftSec: number = 5): Promise<number> {
+        const blockNum = await ethers.provider.getBlockNumber()
+        const beforeTs = (await ethers.provider.getBlock(blockNum)).timestamp
+        const newBlockTs = beforeTs + shiftSec
+
+        await network.provider.send('evm_setNextBlockTimestamp', [ newBlockTs ])
+
+        return newBlockTs
+    }
+
+    function ethToWei (eth: bigint): bigint {
+        return eth * 10n ** 18n
+    }
 
     beforeEach(async () => {
-        [ deployer, projectOwner, accountHolder ] = await ethers.getSigners()
+        [ deployer, projectOwner, accountHolder, someNewOwner ] = await ethers.getSigners()
 
         const Token0Factory = await ethers.getContractFactory('ERC20Token', deployer)
         token0 = await Token0Factory.deploy('Token-0', 'T-0', supply, projectOwner.address)
@@ -50,15 +70,6 @@ describe('team-distributor', () => {
         await exchange.deployed()
     })
 
-    async function setTokens (): Promise<void> {
-        await exchange.connect(projectOwner).setToken0(token0.address)
-        await exchange.connect(projectOwner).setToken1(token1.address)
-    }
-
-    function ethToWei (eth: bigint): bigint {
-        return eth * 10n ** 18n
-    }
-
     it('should be deployed', async () => {
         expect(token0.address).to.be.properAddress
         expect(token1.address).to.be.properAddress
@@ -67,14 +78,38 @@ describe('team-distributor', () => {
         expect(await token0.balanceOf(projectOwner.address)).to.be.equals(supply)
         expect(await token1.balanceOf(projectOwner.address)).to.be.equals(supply)
 
-        expect(await exchange._token0()).equals(zeroAddress)
-        expect(await exchange._token1()).equals(zeroAddress)
+        expect(await exchange.token0()).equals(zeroAddress)
+        expect(await exchange.token1()).equals(zeroAddress)
+    })
+
+    it('should transfer ownership', async () => {
+        const tx = await exchange.connect(projectOwner)
+            .transferOwnership(someNewOwner.address)
+
+        await expect(tx).to.be
+            .emit(exchange, 'OwnershipTransferred')
+            .withArgs(projectOwner.address, someNewOwner.address)
+    })
+
+    it('shouldn\'t transfer ownership (not owner)', async () => {
+        const tx = exchange.connect(deployer).transferOwnership(someNewOwner.address)
+        await expect(tx).to.be.revertedWith(ERRORS.NOT_COWNER)
     })
 
     it('should set tokens', async () => {
-        await setTokens()
-        expect(await exchange._token0()).to.be.equals(token0.address)
-        expect(await exchange._token1()).to.be.equals(token1.address)
+        const tx1 = await exchange.connect(projectOwner).setToken0(token0.address)
+        const tx2 = await exchange.connect(projectOwner).setToken1(token1.address)
+
+        await expect(tx1)
+            .to.be.emit(exchange, 'SetUpToken')
+            .withArgs(token0.address, 0)
+
+        await expect(tx2)
+            .to.be.emit(exchange, 'SetUpToken')
+            .withArgs(token1.address, 1)
+
+        expect(await exchange.token0()).to.be.equals(token0.address)
+        expect(await exchange.token1()).to.be.equals(token1.address)
     })
 
     it('shouldn\'t set tokens (not owner)', async () => {
@@ -84,8 +119,8 @@ describe('team-distributor', () => {
         await expect(exchange.connect(deployer).setToken1(token1.address))
             .to.be.revertedWith(ERRORS.NOT_COWNER)
 
-        expect(await exchange._token0()).equals(zeroAddress)
-        expect(await exchange._token1()).equals(zeroAddress)
+        expect(await exchange.token0()).equals(zeroAddress)
+        expect(await exchange.token1()).equals(zeroAddress)
     })
 
     it('try exchange before initialization', async () => {
@@ -148,8 +183,10 @@ describe('team-distributor', () => {
         expect(await token1.balanceOf(exchange.address)).equals(base)
         // ---------------
 
-        // exchange
-        await exchange.connect(accountHolder).exchange(base)
+        const blockts = await determineBlockTimestamp()
+        await expect(await exchange.connect(accountHolder).exchange(base))
+            .to.be.emit(exchange, 'Exchanged')
+            .withArgs(accountHolder.address, base, blockts)
 
         // after exchange
         expect(await token1.balanceOf(accountHolder.address)).equals(base)
