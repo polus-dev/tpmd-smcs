@@ -80,20 +80,30 @@ describe('team-distributor', () => {
 
         expect(await exchange.token0()).equals(zeroAddress)
         expect(await exchange.token1()).equals(zeroAddress)
+
+        expect(await exchange.owner()).to.be.equal(projectOwner.address)
     })
 
     it('should transfer ownership', async () => {
+        expect(await exchange.owner()).to.be.equal(projectOwner.address)
+
         const tx = await exchange.connect(projectOwner)
             .transferOwnership(someNewOwner.address)
 
         await expect(tx).to.be
             .emit(exchange, 'OwnershipTransferred')
             .withArgs(projectOwner.address, someNewOwner.address)
+
+        expect(await exchange.owner()).to.be.equal(someNewOwner.address)
     })
 
     it('shouldn\'t transfer ownership (not owner)', async () => {
+        const ownerBefore = await exchange.owner()
+
         const tx = exchange.connect(deployer).transferOwnership(someNewOwner.address)
         await expect(tx).to.be.revertedWith(ERRORS.NOT_COWNER)
+
+        expect(await exchange.owner()).to.be.equal(ownerBefore)
     })
 
     it('should set tokens', async () => {
