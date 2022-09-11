@@ -4,11 +4,12 @@ import '@nomicfoundation/hardhat-toolbox'
 import 'hardhat-gas-reporter'
 
 import './tasks/deploy'
+import './tasks/info'
 
 dotenv.config({ path: '.env' })
 
 const config: HardhatUserConfig = {
-    defaultNetwork: 'hardhat',
+    defaultNetwork: 'mumbai',
     networks: {
         hardhat: {},
         mumbai: {
