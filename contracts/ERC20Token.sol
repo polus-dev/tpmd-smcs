@@ -29,7 +29,7 @@ contract ERC20Token is ERC20 {
         uint256 supply,
         address initializer
     ) ERC20(name, symbol) {
-        ERC20._mint(initializer, supply);
+        ERC20._mint(initializer, supply * 1e18);
     }
 
     function burn(uint256 amount) external {

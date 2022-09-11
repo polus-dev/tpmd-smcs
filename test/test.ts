@@ -27,7 +27,7 @@ describe('team-distributor', () => {
     const zeroAddress = '0x0000000000000000000000000000000000000000'
 
     // 1000000000000000000000000
-    const supply = 1_000_000n * (10n ** 18n)
+    const supply = 1_000_000n
 
     let token0: ERC20Token
     let token1: ERC20Token
@@ -79,8 +79,11 @@ describe('team-distributor', () => {
         expect(token1.address).to.be.properAddress
         expect(exchange.address).to.be.properAddress
 
-        expect(await token0.balanceOf(projectOwner.address)).to.be.equals(supply)
-        expect(await token1.balanceOf(projectOwner.address)).to.be.equals(supply)
+        expect(await token0.balanceOf(projectOwner.address))
+            .to.be.equals(supply * (10n ** 18n))
+
+        expect(await token1.balanceOf(projectOwner.address))
+            .to.be.equals(supply * (10n ** 18n))
 
         expect(await exchange.token0()).to.be.equals(zeroAddress)
         expect(await exchange.token1()).to.be.equals(zeroAddress)

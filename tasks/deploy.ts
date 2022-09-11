@@ -6,7 +6,7 @@ type DeployExchangeArgs = { owner: string }
 task('deploy-token', 'deploy "contracts/ERC20Token.sol" smart contract')
     .addPositionalParam<string>('name', 'name of the token')
     .addPositionalParam<string>('symbol', 'symbol of the token')
-    .addPositionalParam<number>('supply', 'initial supply of the token')
+    .addPositionalParam<number>('supply', 'initial supply of the token (will be "* 1e18" in smc)')
     .addPositionalParam<string>('initializer', 'address which will receive the initial supply')
     .setAction(async (arg: DeployTokenArgs, hre) => {
         const Token = await hre.ethers.getContractFactory('ERC20Token')
