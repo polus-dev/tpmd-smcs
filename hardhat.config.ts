@@ -39,7 +39,8 @@ const config: HardhatUserConfig = {
         currency: process.env.GAS_REPORTER_CURRENCY,
         gasPriceApi: process.env.GAS_REPORTER_GASPRICEAPI,
         coinmarketcap: process.env.GAS_REPORTER_COINMARKETCAP
-    }
+    },
+    etherscan: { apiKey: { polygon: process.env.ETHERSCAN_KEY } }
 }
 
 // eslint-disable-next-line import/no-default-export
